@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block top %}
+<li><a href="{{ url_for('profile.profile') }}">Profile</a>
+{% endblock %}
+
 {% block header %}
   <h1>{% block title %}Posts{% endblock %}</h1>
   {% if g.user %}
@@ -8,11 +12,13 @@
 {% endblock %}
 
 {% block content %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js" defer></script>
+<script src="{{ url_for('static', filename='scripts/archive.js') }}" defer></script>
   {% for post in posts %}
     <article class="post">
       <header>
         <div>
-          <h1>{{ post['title'] }}</h1>
+          <h1>{{ post['destination'] }}</h1>
           <div class="about">by {{ post['username'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
         </div>
         {% if g.user['id'] == post['author_id'] %}
@@ -20,6 +26,18 @@
         {% endif %}
       </header>
       <p class="body">{{ post['body'] }}</p>
+      {% if g.user %}
+      <span>
+        <!-- Your HTML with the archive icon -->
+        <img class="icons archive" data-id="{{ post['id'] }}" src="{{ url_for('static', filename='uploads/archive.png') }}" alt="archive icon">
+        
+        <!-- Your JavaScript -->
+        <script>
+       
+        </script>
+      </span>
+      
+      {% endif %}
     </article>
     {% if not loop.last %}
       <hr>

@@ -6,10 +6,19 @@
 
 {% block content %}
   <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
+    <div class="mb-3">
+      <label for="exampleFormControlInput1" class="form-label">Email address</label>
+      <input name="email" type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+    </div>
+
+    <label for="inputPassword5" class="form-label">Password</label>
+    <input name="password" type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
+    <div id="passwordHelpBlock" class="form-text">
+      Your password must be 8-20 characters long.
+    </div>
+    <br>
+    <div class="col-12 text-right">
+      <button class="btn btn-primary my-submit" type="submit" id="submit-button">Submit form</button>
+    </div>
   </form>
 {% endblock %}

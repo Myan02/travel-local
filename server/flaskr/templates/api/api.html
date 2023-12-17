@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}API{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+
+is this loaded?
+<script>
+
+  console.log('its working tho?')
+   // Replace with your Flask server URL
+   const apiUrl = 'http://127.0.0.1:5000/api/get';
+
+   // Example: Make a request to your Flask backend
+   fetch(`${apiUrl}?origin=JFK&destination=LAX&date=2023-01-01`)
+       .then(response => response.json())
+       .then(data => {
+           console.log('Skyscanner API response:', data);
+           // Handle the data and update your frontend accordingly
+       })
+       .catch(error => console.error('Error fetching data:', error));
+</script>
+{% endblock %}
