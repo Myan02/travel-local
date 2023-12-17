@@ -94,3 +94,25 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+@bp.route('/create-comment/<post_id>', methods=['POST'])
+@login_required
+def create_comment(post_id):
+   text = request.form.get('text')
+
+   if not text:
+      flash("empty comment")
+   else:
+      post = get_db().execute('SELECT * FROM post WHERE id = ?', (post_id,)).fetchone()
+
+      if post:
+         db = get_db()
+         db.execute('INSERT INTO comment (body, author_id, post_id)'
+                                    ' VALUES (?, ?, ?)',
+               (text, g.user['id'], post_id))
+         db.commit()
+      else:
+         flash("post does not exist")
+
+
+   return redirect(url_for('blog/index.html'))

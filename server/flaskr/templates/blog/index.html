@@ -20,6 +20,9 @@
         {% endif %}
       </header>
       <p class="body">{{ post['body'] }}</p>
+      <form class="input-group mb-3" method='POST' action="/create-comment/{{post.id}}">
+        <input type="text" id="text" name="text" class="form-control" placeholder="comment..."/>
+        <button type="submit" class="btn btn-primary">Comment</button> 
     </article>
     {% if not loop.last %}
       <hr>
