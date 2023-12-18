@@ -1,2 +1,4 @@
 flask
-jquer
+flas-cors
+requests
+jquery
