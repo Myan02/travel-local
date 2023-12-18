@@ -26,18 +26,13 @@
         {% endif %}
       </header>
       <p class="body">{{ post['body'] }}</p>
+
       {% if g.user %}
       <span>
-        <!-- Your HTML with the archive icon -->
         <img class="icons archive" data-id="{{ post['id'] }}" src="{{ url_for('static', filename='uploads/archive.png') }}" alt="archive icon">
-        
-        <!-- Your JavaScript -->
-        <script>
-       
-        </script>
       </span>
-      
       {% endif %}
+      
     </article>
     {% if not loop.last %}
       <hr>

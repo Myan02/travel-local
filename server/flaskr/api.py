@@ -9,6 +9,7 @@ from flaskr.db import get_db
 from flaskr.auth import login_required
 
 import requests
+from flask_cors import cross_origin
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -18,32 +19,31 @@ def api_home():
         print(f'\n\ni made it this far\n\n')
         return render_template('api/home.html')
 
-
-@bp.route('/get', methods=['GET', 'POST'])
+@bp.route('get', methods=['POST'])
+@cross_origin()
 def api():
-    api_key = '657d604030bad43384fcb694'
-    # base_url = f'https://partners.api.skyscanner.net/apiservices/v3/'
-    base_url = 'https://api.flightapi.io/onewaytrip/657d604030bad43384fcb694/HEL/OUL/2024-05-20/1/0/0/Economy/USD'
+    if request.method == 'POST':
+        api_key = '1a419b5c83877f83023bb96ea8608c41'
+        flight_number = '135'
+        
+        if not flight_number:
+            return jsonify({'error': 'Flight number is required'}), 400
 
-    
-    origin = request.args.get('origin')
-    destination = request.args.get('destination')
-    date = request.args.get('date')
+        base_url = 'https://api.aviationstack.com/v1/flights?access_key=1a419b5c83877f83023bb96ea8608c41&flight_number=135'
+        params = {
+            'access_key': api_key,
+            'flight_number': flight_number
+        }
 
-    # Update these values with your specific market, currency, and locale
-    market = 'US'
-    currency = 'USD'
-    locale = 'en-US'
+        response = requests.get(base_url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return jsonify(data)
+        else:
+            return jsonify({'error': 'Failed to fetch data from Aviation Stack API'}), 500
 
-    # Construct the API request URL
-    api_url = f"{base_url}{market}/{currency}/{locale}/{origin}/{destination}/{date}?query=fran&apiKey={api_key}"
-
-    response = requests.get(base_url)
-   
-    if response.status_code == 200:
-      data = response.json()
-      return jsonify(data)
-    else:
-        return jsonify({'error': 'Failed to fetch data from Skyscanner API'}), 500
+    # Handle GET requests if needed
+    return jsonify({'error': 'Only POST requests are allowed for this endpoint'}), 400
     
     

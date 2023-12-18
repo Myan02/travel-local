@@ -12,8 +12,13 @@
   <form method="post">
     <label for="destination">Destination</label>
     <input name="destination" id="destination" value="{{ request.form['destination'] }}" required>
+    
     <label for="body">Body</label>
     <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
+
+    <label for="image">Image:</label>
+    <input type="file" name="image" accept="image/*">
+    
     <input type="submit" value="Save">
   </form>
 {% endblock %}

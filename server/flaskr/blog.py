@@ -96,30 +96,49 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
-
+ 
 @bp.route('/<int:id>/archive', methods=['POST'])
 def archive(id):
-   archive_exists = check_post(id)
-   db = get_db()
-   
-   if not archive_exists:
-      db.execute('INSERT INTO archive (user_id, post_id)'
-                 ' VALUES (?, ?)', 
-                 (g.user['id'], id))
-   else:
-      db.execute('DELETE FROM archive WHERE post_id = ?', (id,))
-   
-   db.commit()
-   return jsonify(success=True)
+    archive_exists = check_post(id, g.user['id'])
+    db = get_db()
 
-def check_post(id):
+    if not archive_exists:
+        db.execute('INSERT INTO archive (user_id, post_id)'
+                   ' VALUES (?, ?)', 
+                   (g.user['id'], id))
+    else:
+        db.execute('DELETE FROM archive WHERE post_id = ? AND user_id = ?', (id, g.user['id']))
+
+    db.commit()
+    return jsonify(success=True)
+
+# Add a new route for the profile page to handle immediate deletion
+@bp.route('/archive', methods=['POST'])
+def archive_profile():
+    post_id = request.form.get('id')
+    if post_id is None:
+        return jsonify(success=False, error="Post ID is missing")
+
+    archive_exists = check_post(post_id, g.user['id'])
+    db = get_db()
+
+    if archive_exists:
+        db.execute('DELETE FROM archive WHERE post_id = ? AND user_id = ?', (post_id, g.user['id']))
+        db.commit()
+
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False, error="Post not found in archive")
+
+def check_post(id, user_id):
    archive_exists = get_db().execute(
       'SELECT *'
       ' FROM archive'
-      f' WHERE post_id = {id} AND user_id = {g.user["id"]}'
-   ).fetchall()
-   
-   return archive_exists
+      ' WHERE post_id = ? AND user_id = ?',
+      (id, user_id)
+   ).fetchone()
+
+   return archive_exists is not None
    
    
    
