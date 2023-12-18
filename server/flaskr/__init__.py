@@ -22,8 +22,6 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-    
-    CORS(app, origins='http://localhost:5000')
 
     from . import db
     db.init_app(app)
@@ -37,8 +35,6 @@ def create_app(test_config=None):
     
     from . import profile
     app.register_blueprint(profile.bp)
-    
-    from . import api
-    app.register_blueprint(api.bp)
+
 
     return app

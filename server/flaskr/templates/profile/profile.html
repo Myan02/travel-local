@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block top %}
-<li><a href="{{ url_for('blog.index') }}">Home</a>
+<li><a href="{{ url_for('blog.index') }}">Home</a></li>  <!-- Added missing </li> -->
 {% endblock %}
 
 {% block header %}
@@ -11,6 +11,7 @@
 {% block content %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js" defer></script>
 <script src="{{ url_for('static', filename='scripts/archive.js') }}" defer></script>
+<script src="{{ url_for('static', filename='scripts/search.js') }}" defer></script>
 <br>
 <div class="row">
    <div class="col-md-4">
@@ -23,7 +24,6 @@
           No archived Posts
         {% else %}
          {% for post in posts %}
-            
               <article class="post">
                 <header>
                 <div>
@@ -35,16 +35,13 @@
                 {% endif %}
                 </header>
                 <p class="body">{{ post['body'] }}</p>
-
                 <div>
                   <img class="icons archive" data-id="{{ post['id'] }}" src="{{ url_for('static', filename='uploads/archive.png') }}" alt="archive icon">
                 </div>
-
               </article>
               {% if not loop.last %}
                 <hr>
               {% endif %}
-          
          {% endfor %}
          {% endif %}
        </div>
@@ -63,14 +60,27 @@
    </div>
 
    <div class="col-md-4">
-     <div class="card mb-4">
-       <div class="card-header">
-         Current Travel Prices
-       </div>
-       <div class="card-body">
-         <!-- Add content for Trends -->
-       </div>
-     </div>
-   </div>
+    <div class="card mb-4">
+      <div class="card-header">
+        Current Flights
+      </div>
+      <div class="card-body">
+        <nav class="navbar bg-body-tertiary">
+          <div class="container-fluid">
+            <form class="d-flex" role="search" style="min-width: 100%;">
+              <input class="form-control me-2" type="search" id="flightSearch" placeholder="Search" aria-label="Search">
+            </form>
+          </div>
+        </nav>
+  
+        <!-- Display search results -->
+        <div id="searchResults"></div>
+  
+        <!-- Display the flight number underneath the search bar -->
+        <div id="flightNumberDisplay"></div>
+      </div>
+    </div>
+  </div>
+
  </div>
 {% endblock %}
