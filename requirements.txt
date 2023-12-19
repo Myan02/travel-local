@@ -1,4 +1,2 @@
 flask
-flas-cors
 requests
-jquery
