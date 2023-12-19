@@ -8,7 +8,6 @@ contourpy==1.2.0
 cycler==0.12.1
 Flask==3.0.0
 Flask-Cors==4.0.0
--e git+https://github.com/Myan02/travel-local.git@dfec886ca6936ea1e60ccb62d378dbbf411b27b1#egg=flaskr
 fonttools==4.45.1
 gunicorn==21.2.0
 idna==3.6
