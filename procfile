@@ -1,1 +1,1 @@
-web: gunicorn run:flaskr
+web: gunicorn server.run:flaskr
