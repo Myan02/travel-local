@@ -10,14 +10,33 @@ bp = Blueprint('blog', __name__)
 
 @bp.route('/')
 def index():
-   db = get_db()
-   posts = db.execute(
-      'SELECT p.id, destination, body, created, author_id, username'
-      ' FROM post p JOIN user u ON p.author_id = u.id'
-      ' ORDER BY created DESC;'
-   ).fetchall()
+   if g.user:
+      db = get_db()
+      posts = db.execute(
+         'SELECT p.id, destination, body, created, author_id, username '
+         'FROM post p JOIN user u ON p.author_id = u.id '
+         'WHERE p.author_id = ? OR p.author_id IN '
+         '(SELECT following_id FROM followers WHERE follower_id = ?) '
+         'ORDER BY created DESC',
+         (g.user['id'], g.user['id'])
+      ).fetchall()
+
+      comments = {}
+      for post in posts:
+         post_id = post['id']
+         post_comments = db.execute(
+            'SELECT c.id, body, username, created, author_id ' 
+            'FROM comment c JOIN user u ON c.author_id = u.id '
+            'WHERE c.post_id = ?',
+            (post_id,)
+         ).fetchall()
+         comments[post_id] = post_comments
    
-   return render_template('blog/index.html', posts=posts)
+   else:
+      flash("Please log in!")
+      return redirect(url_for('auth.login'))
+   
+   return render_template('blog/index.html', posts=posts, comments=comments)
  
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -96,6 +115,129 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+ 
+@bp.route('/create-comment/<int:post_id>', methods=['GET','POST'])
+@login_required
+def create_comment(post_id):
+   text = request.form.get('text')
+
+   if not text:
+      flash("comment empty")
+      return redirect(url_for('blog.index'))
+
+   else:
+      post = get_db().execute('SELECT * FROM post WHERE id = ?', (post_id,)).fetchone()
+
+      if post:
+         db = get_db()
+         db.execute('INSERT INTO comment (body, author_id, post_id)'
+                                    ' VALUES (?, ?, ?)',
+               (text, g.user['id'], post_id))
+         db.commit()
+      else:
+         flash("post does not exist")
+
+   return redirect(url_for('blog.index')) 
+ 
+@bp.route('/delete-comment/<int:comment_id>', methods=['GET','POST'])
+@login_required
+def delete_comment(comment_id):
+   db = get_db()
+   comment = db.execute('SELECT id, author_id, post_id FROM comment WHERE id = ?', (comment_id,)).fetchone()
+
+   if comment is None:
+      return redirect(url_for('blog.index'))
+
+   if g.user['id'] != comment['author_id']:
+        abort(403)
+
+   db.execute('DELETE FROM comment WHERE id = ?', (comment_id,))
+   db.commit()
+   flash("comment deleted!")
+   
+   return redirect(url_for('blog.index'))
+
+@bp.route('/user/<username>', methods = ['GET','POST'])
+def user(username):
+   db = get_db()
+   user = db.execute('SELECT * FROM user WHERE username = ?', (username,)).fetchone()
+
+   if user is None:
+      flash("username not found")
+
+   posts = db.execute('SELECT p.id, destination, body, created, author_id, username'
+        ' FROM post p JOIN user u ON p.author_id = u.id'
+        ' WHERE u.id = ?'
+        ' ORDER BY created DESC',
+        (user['id'],)
+    ).fetchall() 
+   
+   comments = {}
+   for post in posts:
+      post_id = post['id']
+      post_comments = db.execute(
+         'SELECT c.id, body, username, created, author_id ' 
+          'FROM comment c JOIN user u ON c.author_id = u.id '
+          'WHERE c.post_id = ?',
+          (post_id,)
+      ).fetchall()
+      comments[post_id] = post_comments
+
+   follower_count = db.execute('SELECT COUNT(*) FROM followers WHERE following_id = ?', (user['id'],)).fetchone()[0]
+   
+   following_count = db.execute('SELECT COUNT(*) FROM followers WHERE follower_id = ?', (user['id'],)).fetchone()[0]
+
+   return render_template('blog/user.html', posts=posts, comments=comments, user=user, follower_count=follower_count, following_count = following_count)
+
+
+@bp.route('/follow/<username>', methods = ['GET','POST'])
+@login_required
+def follow(username):
+   db = get_db()
+   follow_user = db.execute('SELECT id, username FROM user WHERE username = ?', (username,)).fetchone()
+
+   already_follow = db.execute('SELECT * FROM followers WHERE follower_id = ? AND following_id = ?', (g.user['id'], follow_user['id'])).fetchone()
+
+   if follow_user['id'] == g.user['id']:
+      flash("cannot follow self!")
+   
+   elif already_follow:
+      flash(f"You already follow {follow_user['username']}!")
+   
+   else:
+      db = get_db()
+      db.execute('INSERT INTO followers (follower_id, following_id)'
+                                    ' VALUES (?, ?)',
+               (g.user['id'], follow_user['id']))
+      db.commit()
+      flash(f"You are now following {follow_user['username']}!")
+   
+   return redirect(url_for('blog.user', username=username))
+
+
+@bp.route('/unfollow/<username>', methods = ['GET','POST'])
+@login_required
+def unfollow(username):
+   db = get_db()
+   unfollow_user = db.execute('SELECT id, username FROM user WHERE username = ?', (username,)).fetchone()
+
+   already_unfollow = db.execute(
+    'SELECT * FROM followers WHERE follower_id = ? AND following_id = ?', (g.user['id'], unfollow_user['id'])).fetchone()
+
+   if unfollow_user['id'] == g.user['id']:
+      flash("cannot unfollow yourself!")
+
+   elif not already_unfollow:
+      flash(f"You already unfollowed {unfollow_user['username']}!")
+
+   else:
+      db = get_db()
+      db.execute('DELETE FROM followers WHERE follower_id = ? AND following_id = ?',
+               (g.user['id'], unfollow_user['id']))
+      db.commit()
+   
+   return redirect(url_for('blog.user', username=username))
+
  
 @bp.route('/<int:id>/archive', methods=['POST'])
 def archive(id):
