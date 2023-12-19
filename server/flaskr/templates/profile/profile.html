@@ -65,19 +65,37 @@
         Current Flights
       </div>
       <div class="card-body">
-        <nav class="navbar bg-body-tertiary">
-          <div class="container-fluid">
-            <form class="d-flex" role="search" style="min-width: 100%;">
-              <input class="form-control me-2" type="search" id="flightSearch" placeholder="Search" aria-label="Search">
-            </form>
+        <div class="card mb-4">
+          <div class="card-header">
+            Current Flights
           </div>
-        </nav>
+          <div class="card-body">
+            <nav class="navbar bg-body-tertiary">
+              <div class="container-fluid">
+                <div class="d-flex">
+                  <form class="me-2" role="search" style="min-width: 25%;">
+                    <input class="form-control search-input" name="flight_number" type="search" id="flight_number" placeholder="Flight #" aria-label="Search">
+                  </form>
+                  <form class="me-2" role="search" style="min-width: 25%;">
+                    <input class="form-control search-input" name="flight_airline" type="search" id="flight_airline" placeholder="Airline Code" aria-label="Search">
+                  </form>
+                  <form class="me-2" role="search" style="min-width: 25%;">
+                    <input class="form-control search-input" name="flight_status" type="search" id="flight_status" placeholder="Status" aria-label="Search">
+                  </form>
+                  <form class="me-2" role="search" style="min-width: 25%;">
+                    <input class="form-control search-input" name="flight_limit" type="search" id="flight_limit" placeholder="Limit" aria-label="Search">
+                  </form>
+                </div>
+              </div>
+            </nav>
   
-        <!-- Display search results -->
-        <div id="searchResults"></div>
+            <!-- Display search results -->
+            <div id="searchResults"></div>
   
-        <!-- Display the flight number underneath the search bar -->
-        <div id="flightNumberDisplay"></div>
+            <!-- Display the flight number underneath the search bar -->
+            <div id="flightNumberDisplay"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

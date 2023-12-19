@@ -27,58 +27,60 @@ def get_user_posts():
 @bp.route('/search_flights', methods=['POST'])
 @login_required
 def search_flights():
-   if request.method == 'POST':
-      search_value = request.get_json().get('search')  # Use get_json() directly
-      delimiters = [',', ' ', ':']
-      
-      for delimiter in delimiters:
-         search_value = ' '.join(search_value.split(delimiter))
-         
-      search_result = search_value.split()
-         
-      search_dict = {}
-      for param in range(0,len(search_result), 2):
-         search_dict[search_result[param]] = search_result[param + 1]
-        
+    if request.method == 'POST':
+        # Extract search parameters from the form
+        search_number = request.form.get('flight_number')
+        search_airline = request.form.get('flight_airline')
+        search_status = request.form.get('flight_status')
+        search_limit = request.form.get('flight_limit', type=int)
 
-      # Perform a search query based on the search value
-      results = perform_flight_search(search_dict)
+        # Define the base URL and API key
+        base_url = 'http://api.aviationstack.com/v1/flights'
+        api_key = 'c6006612b5a8a2904527b524c84e59d6'  # Replace with your actual API key
 
-      # Return the results as JSON
-      return jsonify(results)
+        # Create parameters dictionary with common parameters
+        params = {'access_key': api_key}
 
-def perform_flight_search(search_dict):
-    api_key = 'c6006612b5a8a2904527b524c84e59d6'  # Replace with your actual API key
-    base_url = 'http://api.aviationstack.com/v1/flights'
+        # Set the limit parameter if provided, default to 5 if not
+        params['limit'] = search_limit if search_limit is not None else 5
 
-    params = {
-        'access_key': api_key,
-        'limit': search_dict['limit'],
-        'flight_number': search_dict['flight'],
-        'flight_status': search_dict['status']
-    }
+        # Check if a specific flight number is provided
+        if search_number:
+            params['flight_number'] = search_number
 
-    response = requests.get(base_url, params=params)
+        # Check if a specific airline code is provided
+        if search_airline:
+            params['airline_iata'] = search_airline
 
-    if response.status_code == 200:
-        data = response.json()
-        results = []
+        # Check if a specific status is provided
+        if search_status:
+            params['flight_status'] = search_status
 
-        for flight in data.get('data', []):
-            destination = flight.get('arrival', {}).get('airport', '')
-            departure = flight.get('departure', {}).get('airport', '')
-            flight_number = flight.get('flight', {}).get('iata', '')
+        # Perform the API request with the constructed parameters
+        response = requests.get(base_url, params=params)
 
-            result = {
-                'destination': destination,
-                'departure': departure,
-                'flight_number': flight_number
-            }
+        if response.status_code == 200:
+            data = response.json().get('data', [])
+            results = []
 
-            results.append(result)
+            for flight in data:
+                destination = flight.get('arrival', {}).get('airport', '')
+                departure = flight.get('departure', {}).get('airport', '')
+                flight_number = flight.get('flight', {}).get('iata', '')
 
-        return results
-    else:
-        # Handle the case when the API request fails
-        print('Failed to fetch data from Aviation Stack API')
-        return []
+                result = {
+                    'destination': destination,
+                    'departure': departure,
+                    'flight_number': flight_number
+                }
+
+                results.append(result)
+
+            return jsonify(results)
+        else:
+            # Handle the case when the API request fails
+            print('Failed to fetch data from Aviation Stack API')
+            return jsonify({'error': 'Failed to fetch data from Aviation Stack API'}), 500
+
+    # Handle the case when the request method is not POST
+    return jsonify({'error': 'Invalid request method'}), 400
