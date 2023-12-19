@@ -43,6 +43,14 @@
           {% endif %}
         </div>
       </div>
+      <div>
+        <p>{{likes_count[post['id']]}} Likes </p>
+      </div>
+      <div>
+        <form method="post" action="{{ url_for('blog.likes', post_id=post['id']) }}">
+          <button type="submit">Like</button>
+        </form>
+      </div>
       <form class="input-group mb-3" method='POST' action="{{ url_for('blog.create_comment', post_id=post['id']) }}">
         <input type="text" id="text" name="text" class="form-control" placeholder="comment..."/>
         <button type="submit" class="btn btn-primary">Comment</button>
