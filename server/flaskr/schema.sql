@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS comment;
+DROP TABLE IF EXISTS followers;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,9 +21,17 @@ CREATE TABLE post (
 CREATE TABLE comment (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   author_id INTEGER NOT NULL,
-  post_id = INTEGER NOT NULL,
+  post_id INTEGER NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   body TEXT NOT NULL,
   FOREIGN KEY (author_id) REFERENCES user (id) ON DELETE CASCADE,
   FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE
+);
+
+CREATE TABLE followers (
+  follower_id INTEGER NOT NULL,
+  following_id INTEGER NOT NULL,
+  PRIMARY KEY (follower_id,following_id),
+  FOREIGN KEY (follower_id) REFERENCES user (id),
+  FOREIGN KEY (following_id) REFERENCES user (id)
 );
