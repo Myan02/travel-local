@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS archive;
 DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS followers;
+DROP TABLE IF EXISTS likes;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +40,14 @@ CREATE TABLE followers (
   PRIMARY KEY (follower_id,following_id),
   FOREIGN KEY (follower_id) REFERENCES user (id),
   FOREIGN KEY (following_id) REFERENCES user (id)
+);
+
+CREATE TABLE likes (
+  follower_like INTEGER NOT NULL,
+  post_id INTEGER NOT NULL,
+  PRIMARY KEY (follower_like, post_id),
+  FOREIGN KEY (follower_like) REFERENCES followers (follower_id),
+  FOREIGN KEY (post_id) REFERENCES post (id)
 );
 
 CREATE TABLE archive (

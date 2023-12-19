@@ -22,6 +22,7 @@ def index():
       ).fetchall()
 
       comments = {}
+      likes_count = {}
       for post in posts:
          post_id = post['id']
          post_comments = db.execute(
@@ -31,12 +32,14 @@ def index():
             (post_id,)
          ).fetchall()
          comments[post_id] = post_comments
+         
+         likes_count[post_id] = db.execute('SELECT COUNT(*) FROM likes WHERE post_id = ?', (post_id,)).fetchone()[0]
    
    else:
       flash("Please log in!")
       return redirect(url_for('auth.login'))
    
-   return render_template('blog/index.html', posts=posts, comments=comments)
+   return render_template('blog/index.html', posts=posts, comments=comments, likes_count = likes_count)
  
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -237,6 +240,32 @@ def unfollow(username):
       db.commit()
    
    return redirect(url_for('blog.user', username=username))
+
+@bp.route('/like/<int:post_id>', methods = ['GET', 'POST'])
+@login_required
+def likes(post_id):
+   if request.method == 'POST':
+      db = get_db()
+      post = db.execute('SELECT * FROM post WHERE id = ?', (post_id,)).fetchone()
+
+      if not post:
+         flash("Post does not exist")
+
+      already_liked = db.execute('SELECT * FROM likes WHERE follower_like = ? AND post_id = ?', (g.user['id'], post_id)).fetchone()
+
+      if already_liked:
+         db.execute('DELETE FROM likes where follower_like = ? AND post_id = ?', (g.user['id'], post_id))
+         db.commit()
+      
+      else:
+         follower_id = g.user['id']
+
+         db.execute('INSERT INTO likes (follower_like, post_id)'
+                                             ' VALUES (?, ?)',
+                     (follower_id, post['id']))
+         db.commit()
+         
+   return redirect(url_for('blog.index'))
 
  
 @bp.route('/<int:id>/archive', methods=['POST'])

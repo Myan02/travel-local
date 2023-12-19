@@ -28,12 +28,19 @@
       <p class="body">{{ post['body'] }}</p>
 
       {% if g.user %}
-      <span>
-        <img class="icons archive" data-id="{{ post['id'] }}" src="{{ url_for('static', filename='uploads/archive.png') }}" alt="archive icon">
-      </span>
+
+      <div class="row">
+        <div class="col-md-6">
+            <span class="d-inline-block mt=0 mb=0">
+                <img class="icons archive" data-id="{{ post['id'] }}" src="{{ url_for('static', filename='uploads/archive.png') }}" alt="archive icon">
+                <form method="post" action="{{ url_for('blog.likes', post_id=post['id']) }}" class="d-inline-block">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Like</button>
+                </form>
+                {{likes_count[post['id']]}} Likes 
+            </span>
+        </div>
+    </div>
       {% endif %}
-      <br>
-      <br /> 
       <div class="card" id="comments-{{ post['id'] }}">
         <div class="card-body" id="comments-expanded-{{ post['id'] }}">
           {% if comments[post['id']] %}
@@ -56,10 +63,12 @@
           {% endif %}
         </div>
       </div>
+
       <form class="input-group mb-3" method='POST' action="{{ url_for('blog.create_comment', post_id=post['id']) }}">
         <input type="text" id="text" name="text" class="form-control" placeholder="comment..." style="width: 25%;"/>
         <button type="submit" class="btn btn-primary" style="width: 10%;">Comment</button>
       </form>
+      
     </article>
     {% if not loop.last %}
       <hr>

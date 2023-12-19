@@ -23,6 +23,7 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # import blueprint modules
     from . import db
     db.init_app(app)
     
@@ -35,6 +36,5 @@ def create_app(test_config=None):
     
     from . import profile
     app.register_blueprint(profile.bp)
-
 
     return app

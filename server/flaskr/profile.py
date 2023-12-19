@@ -6,12 +6,14 @@ from flaskr.db import get_db
 
 bp = Blueprint('profile', __name__, url_prefix='/profile')
 
+# show archived posts
 @bp.route('/')
 @login_required
 def profile():
     posts = get_user_posts()
     return render_template('profile/profile.html', posts=posts)
 
+# retrieve archived posts
 def get_user_posts():
     db = get_db()
     all_posts = db.execute(
@@ -24,45 +26,45 @@ def get_user_posts():
     ).fetchall()
     return all_posts
 
+# search api for flights 
 @bp.route('/search_flights', methods=['POST'])
 @login_required
 def search_flights():
     if request.method == 'POST':
-        # Extract search parameters from the form
+        # get search bar values
         search_number = request.form.get('flight_number')
         search_airline = request.form.get('flight_airline')
         search_status = request.form.get('flight_status')
         search_limit = request.form.get('flight_limit', type=int)
 
-        # Define the base URL and API key
+        # set the url and api key
         base_url = 'http://api.aviationstack.com/v1/flights'
-        api_key = 'c6006612b5a8a2904527b524c84e59d6'  # Replace with your actual API key
+        api_key = 'c6006612b5a8a2904527b524c84e59d6'
 
-        # Create parameters dictionary with common parameters
         params = {'access_key': api_key}
 
-        # Set the limit parameter if provided, default to 5 if not
+        # Set the base limit to show 5 results, but can be overwritten
         params['limit'] = search_limit if search_limit is not None else 5
 
-        # Check if a specific flight number is provided
+        # check if specific fields are provided or empty
         if search_number:
             params['flight_number'] = search_number
 
-        # Check if a specific airline code is provided
         if search_airline:
             params['airline_iata'] = search_airline
 
-        # Check if a specific status is provided
         if search_status:
             params['flight_status'] = search_status
 
-        # Perform the API request with the constructed parameters
+        # create master link
         response = requests.get(base_url, params=params)
 
+        # check for good response
         if response.status_code == 200:
             data = response.json().get('data', [])
             results = []
 
+            # set data to output
             for flight in data:
                 destination = flight.get('arrival', {}).get('airport', '')
                 departure = flight.get('departure', {}).get('airport', '')
@@ -78,9 +80,9 @@ def search_flights():
 
             return jsonify(results)
         else:
-            # Handle the case when the API request fails
+            # handle case if api request is bad
             print('Failed to fetch data from Aviation Stack API')
             return jsonify({'error': 'Failed to fetch data from Aviation Stack API'}), 500
 
-    # Handle the case when the request method is not POST
+    # handle case if someone tries to access the route as a GET request
     return jsonify({'error': 'Invalid request method'}), 400
